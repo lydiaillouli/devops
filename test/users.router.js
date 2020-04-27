@@ -1,42 +1,29 @@
-const app = require('../src/index')
-const chai = require('chai')
-const chaiHttp = require('chai-http')
+const express = require('express')
+const users = require('../controllers/users')
 
-chai.use(chaiHttp)
+usersRouter = express.Router()
 
-
-describe('Users REST API', () => {
-
-  after(()=> {
-    app.close(() => {
-      console.log('Http server closed.');
+usersRouter
+  .post('/user', (req, res, next) => {
+    const user = {
+      username: req.body.username,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+    }
+    users.create(user, (err, result) => {
+      if (err) throw err
+      res.status(201).json({ username: result })
     })
   })
+  .get('/:username', (req, res, next) => { // Express URL params - https://expressjs.com/en/guide/routing.html
 
-  describe('POST /user', () => {
-
-    it('create a new user', (done) => {
-      const user = {
-        username: 'sergkudinov',
-        firstname: 'Sergei',
-        lastname: 'Kudinov'
-      }
-      chai.request(app)
-        .post('/user')
-        .send(user)
-        .then((res) => {
-          chai.expect(res).to.have.status(201)
-          chai.expect(res.body.username).to.equal('sergkudinov')
-          chai.expect(res).to.be.json
-          done()
+        // TODO C:usernreate get method API
+        const username = req.params.username
+        users.get(username, (err, result) => {
+          if (err) throw err
+          res.status(201).json({ username: result[0], firstname: result[1], lastname: result[2]})
         })
-        .catch((err) => {
-           throw err
-        })
-    })
+    
   })
 
-  describe('GET /user', ()=> {
-    // TODO Create test for the get method
-  })
-})
+module.exports = usersRouter
